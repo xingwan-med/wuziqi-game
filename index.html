@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>在线五子棋 - 首页</title>
+  <style>
+	* {
+	  margin: 0;
+	  padding: 0;
+	  box-sizing: border-box;
+	}
+	
+	body {
+	  font-family: 'Microsoft YaHei', sans-serif;
+	  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	  min-height: 100vh;
+	  display: flex;
+	  justify-content: center;
+	  align-items: center;
+	  padding: 20px;
+	}
+	
+	.container {
+	  background-color: rgba(255, 255, 255, 0.95);
+	  border-radius: 20px;
+	  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+	  width: 100%;
+	  max-width: 800px;
+	  overflow: hidden;
+	  animation: fadeIn 0.8s ease-out;
+	}
+	
+	@keyframes fadeIn {
+	  from { opacity: 0; transform: translateY(20px); }
+	  to { opacity: 1; transform: translateY(0); }
+	}
+	
+	.header {
+	  background: linear-gradient(to right, #4a00e0, #8e2de2);
+	  color: white;
+	  padding: 40px 20px;
+	  text-align: center;
+	}
+	
+	.logo {
+	  font-size: 3.5rem;
+	  margin-bottom: 15px;
+	}
+	
+	.header h1 {
+	  font-size: 2.5rem;
+	  margin-bottom: 10px;
+	  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+	}
+	
+	.header p {
+	  font-size: 1.2rem;
+	  opacity: 0.9;
+	}
+	
+	.main-content {
+	  padding: 40px;
+	}
+	
+	.room-section {
+	  margin-bottom: 40px;
+	}
+	
+	.room-section h2 {
+	  color: #4a00e0;
+	  font-size: 1.8rem;
+	  margin-bottom: 20px;
+	  text-align: center;
+	  position: relative;
+	}
+	
+	.room-section h2::after {
+	  content: '';
+	  display: block;
+	  width: 60px;
+	  height: 4px;
+	  background: linear-gradient(to right, #4a00e0, #8e2de2);
+	  margin: 10px auto;
+	  border-radius: 2px;
+	}
+	
+	.room-options {
+	  display: flex;
+	  flex-wrap: wrap;
+	  gap: 30px;
+	  justify-content: center;
+	}
+	
+	.option-card {
+	  background: white;
+	  border-radius: 15px;
+	  padding: 30px;
+	  width: 300px;
+	  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+	  transition: all 0.3s ease;
+	  text-align: center;
+	  border: 2px solid transparent;
+	}
+	
+	.option-card:hover {
+	  transform: translateY(-10px);
+	  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+	  border-color: #8e2de2;
+	}
+	
+	.option-icon {
+	  font-size: 3rem;
+	  margin-bottom: 20px;
+	  color: #8e2de2;
+	}
+	
+	.option-card h3 {
+	  color: #333;
+	  font-size: 1.5rem;
+	  margin-bottom: 15px;
+	}
+	
+	.option-card p {
+	  color: #666;
+	  line-height: 1.6;
+	  margin-bottom: 25px;
+	}
+	
+	.room-input {
+	  display: flex;
+	  margin-bottom: 20px;
+	}
+	
+	.room-input input {
+	  flex: 1;
+	  padding: 15px;
+	  border: 2px solid #ddd;
+	  border-radius: 10px 0 0 10px;
+	  font-size: 16px;
+	  outline: none;
+	  transition: border-color 0.3s;
+	}
+	
+	.room-input input:focus {
+	  border-color: #8e2de2;
+	}
+	
+	button {
+	  padding: 15px 30px;
+	  font-size: 16px;
+	  font-weight: bold;
+	  border: none;
+	  border-radius: 10px;
+	  cursor: pointer;
+	  transition: all 0.3s;
+	  background: linear-gradient(to right, #4a00e0, #8e2de2);
+	  color: white;
+	  box-shadow: 0 5px 15px rgba(138, 43, 226, 0.3);
+	}
+	
+	button:hover {
+	  transform: translateY(-3px);
+	  box-shadow: 0 8px 20px rgba(138, 43, 226, 0.4);
+	}
+	
+	button:active {
+	  transform: translateY(-1px);
+	}
+	
+	.room-input button {
+	  border-radius: 0 10px 10px 0;
+	  padding: 15px 25px;
+	  white-space: nowrap;
+	}
+	
+	.ai-btn {
+	  width: 100%;
+	  margin-top: 10px;
+	  background: linear-gradient(to right, #00b09b, #96c93d);
+	}
+	
+	.join-room-btn {
+	  width: 100%;
+	  margin-top: 10px;
+	}
+	
+	.game-info {
+	  background-color: #f8f9ff;
+	  border-radius: 15px;
+	  padding: 30px;
+	  margin-top: 40px;
+	}
+	
+	.game-info h2 {
+	  color: #4a00e0;
+	  font-size: 1.8rem;
+	  margin-bottom: 20px;
+	  text-align: center;
+	}
+	
+	.rules {
+	  display: grid;
+	  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	  gap: 20px;
+	}
+	
+	.rule-item {
+	  background: white;
+	  padding: 20px;
+	  border-radius: 10px;
+	  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+	}
+	
+	.rule-item h3 {
+	  color: #4a00e0;
+	  font-size: 1.3rem;
+	  margin-bottom: 10px;
+	  display: flex;
+	  align-items: center;
+	  gap: 10px;
+	}
+	
+	.rule-icon {
+	  font-size: 1.5rem;
+	}
+	
+	.footer {
+	  text-align: center;
+	  padding: 20px;
+	  color: #666;
+	  border-top: 1px solid #eee;
+	  font-size: 0.9rem;
+	}
+	
+	.notification {
+	  position: fixed;
+	  top: 20px;
+	  right: 20px;
+	  padding: 15px 25px;
+	  background: linear-gradient(to right, #4a00e0, #8e2de2);
+	  color: white;
+	  border-radius: 10px;
+	  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+	  display: none;
+	  z-index: 1000;
+	  animation: slideIn 0.3s ease-out;
+	}
+	
+	@keyframes slideIn {
+	  from { transform: translateX(100%); opacity: 0; }
+	  to { transform: translateX(0); opacity: 1; }
+	}
+	
+	@media (max-width: 768px) {
+	  .room-options {
+		flex-direction: column;
+		align-items: center;
+	  }
+	  
+	  .option-card {
+		width: 100%;
+		max-width: 350px;
+	  }
+	  
+	  .room-input {
+		flex-direction: column;
+	  }
+	  
+	  .room-input input {
+		border-radius: 10px;
+		margin-bottom: 10px;
+	  }
+	  
+	  .room-input button {
+		border-radius: 10px;
+		width: 100%;
+	  }
+	  
+	  .header h1 {
+		font-size: 2rem;
+	  }
+	  
+	  .logo {
+		font-size: 2.5rem;
+	  }
+	}
+  </style>
+</head>
+<body>
+  <div class="container">
+	<div class="header">
+	  <div class="logo">🎮</div>
+	  <h1>在线五子棋对战</h1>
+	  <p>与好友对战或挑战AI，体验经典五子棋乐趣</p >
+	</div>
+	
+	<div class="main-content">
+	  <div class="room-section">
+		<h2>选择游戏方式</h2>
+		<div class="room-options">
+		  <div class="option-card">
+			<div class="option-icon">👥</div>
+			<h3>与好友对战</h3>
+			<p>创建房间邀请好友，或加入好友的房间进行对战。</p >
+			<button onclick="createRoom()" style="width: 100%; margin-bottom: 10px;">创建房间</button>
+			<div class="room-input">
+			  <input type="text" id="roomIdInput" placeholder="输入6位房间ID" maxlength="6">
+			  <button onclick="joinRoom()">加入房间</button>
+			</div>
+		  </div>
+		  
+		  <div class="option-card">
+			<div class="option-icon">🤖</div>
+			<h3>挑战AI</h3>
+			<p>与电脑AI进行对战，提升你的五子棋技巧。</p >
+			<button onclick="startAIGame()" class="ai-btn">开始AI对战</button>
+		  </div>
+		</div>
+	  </div>
+	  
+	  <div class="game-info">
+		<h2>游戏规则</h2>
+		<div class="rules">
+		  <div class="rule-item">
+			<h3><span class="rule-icon">⚫</span> 黑方先行</h3>
+			<p>黑方在棋盘上放置第一颗棋子，房主执黑子。</p >
+		  </div>
+		  <div class="rule-item">
+			<h3><span class="rule-icon">🔄</span> 轮流落子</h3>
+			<p>黑白双方轮流在棋盘交叉点上放置自己的棋子。</p >
+		  </div>
+		  <div class="rule-item">
+			<h3><span class="rule-icon">🏆</span> 五子连珠</h3>
+			<p>先在横、竖或斜方向连成五子的一方获胜。</p >
+		  </div>
+		  <div class="rule-item">
+			<h3><span class="rule-icon">🎮</span> 多种模式</h3>
+			<p>支持好友对战、AI对战两种游戏模式。</p >
+		  </div>
+		</div>
+	  </div>
+	</div>
+	
+	<div class="footer">
+	  <p>© 2026 在线五子棋对战 | 无需下载，打开即玩</p >
+	</div>
+  </div>
+  
+  <div class="notification" id="notification"></div>
+
+  <script>
+	// 生成随机房间ID
+	function generateRoomId() {
+	  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+	  let roomId = '';
+	  for (let i = 0; i < 6; i++) {
+		roomId += chars.charAt(Math.floor(Math.random() * chars.length));
+	  }
+	  return roomId;
+	}
+	
+	// 显示通知
+	function showNotification(message, duration = 3000) {
+	  const notification = document.getElementById('notification');
+	  notification.textContent = message;
+	  notification.style.display = 'block';
+	  
+	  setTimeout(() => {
+		notification.style.display = 'none';
+	  }, duration);
+	}
+	
+	// 创建房间（与好友对战）
+	function createRoom() {
+	  const roomId = generateRoomId();
+	  
+	  // 保存房间信息到localStorage
+	  const roomInfo = {
+		roomId: roomId,
+		playerColor: 'black',
+		isHost: true,
+		gameMode: 'multiplayer', // 多人对战模式
+		createdAt: new Date().toISOString()
+	  };
+	  
+	  localStorage.setItem('gomokuRoomInfo', JSON.stringify(roomInfo));
+	  
+	  showNotification(`房间创建成功！房间ID: ${roomId}，正在进入游戏...`);
+	  
+	  // 等待1秒后跳转到游戏页面
+	  setTimeout(() => {
+		window.location.href = 'game.html?room=' + roomId;
+	  }, 1000);
+	}
+	
+	// 加入房间
+	function joinRoom() {
+	  const roomIdInput = document.getElementById('roomIdInput');
+	  const roomId = roomIdInput.value.trim().toUpperCase();
+	  
+	  if (!roomId) {
+		showNotification('请输入房间ID', 3000);
+		return;
+	  }
+	  
+	  if (roomId.length !== 6) {
+		showNotification('房间ID必须是6位字符', 3000);
+		return;
+	  }
+	  
+	  // 保存房间信息到localStorage
+	  const roomInfo = {
+		roomId: roomId,
+		playerColor: 'white',
+		isHost: false,
+		gameMode: 'multiplayer', // 多人对战模式
+		joinedAt: new Date().toISOString()
+	  };
+	  
+	  localStorage.setItem('gomokuRoomInfo', JSON.stringify(roomInfo));
+	  
+	  showNotification(`正在加入房间: ${roomId}`);
+	  
+	  // 等待1秒后跳转到游戏页面
+	  setTimeout(() => {
+		window.location.href = 'game.html?room=' + roomId;
+	  }, 1000);
+	}
+	
+	// 开始AI对战
+	function startAIGame() {
+	  const roomId = generateRoomId();
+	  
+	  // 保存房间信息到localStorage
+	  const roomInfo = {
+		roomId: roomId,
+		playerColor: 'black',
+		isHost: true,
+		gameMode: 'ai', // AI对战模式
+		isAIMode: true,
+		opponentJoined: true, // AI模式自动有对手
+		createdAt: new Date().toISOString()
+	  };
+	  
+	  localStorage.setItem('gomokuRoomInfo', JSON.stringify(roomInfo));
+	  
+	  showNotification(`正在进入AI对战模式...`);
+	  
+	  // 等待1秒后跳转到游戏页面
+	  setTimeout(() => {
+		window.location.href = 'game.html?room=' + roomId + '&mode=ai';
+	  }, 1000);
+	}
+	
+	// 页面加载时检查URL参数
+	window.onload = function() {
+	  const urlParams = new URLSearchParams(window.location.search);
+	  const roomId = urlParams.get('room');
+	  
+	  if (roomId) {
+		document.getElementById('roomIdInput').value = roomId;
+		showNotification(`检测到房间ID: ${roomId}，点击"加入房间"开始游戏`);
+	  }
+	};
+  </script>
+</body>
+</html>
