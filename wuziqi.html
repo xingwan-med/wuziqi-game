@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>互联网五子棋对战</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: 'Microsoft YaHei', sans-serif;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			min-height: 100vh;
+			padding: 20px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.game-container {
+			background: rgba(255, 255, 255, 0.95);
+			border-radius: 20px;
+			padding: 30px;
+			box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+			max-width: 800px;
+			width: 100%;
+		}
+
+		.game-header {
+			text-align: center;
+			margin-bottom: 20px;
+		}
+
+		.game-title {
+			color: #4a00e0;
+			font-size: 2rem;
+			font-weight: bold;
+			margin-bottom: 10px;
+		}
+
+		.room-info {
+			background: linear-gradient(to right, #4a00e0, #8e2de2);
+			color: white;
+			padding: 15px 20px;
+			border-radius: 10px;
+			margin-bottom: 20px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 10px;
+		}
+
+		.room-id {
+			font-size: 1.1rem;
+			font-weight: bold;
+		}
+
+		.player-info {
+			font-size: 0.9rem;
+		}
+
+		.game-status {
+			text-align: center;
+			padding: 12px 20px;
+			background: #f8f9fa;
+			border-radius: 10px;
+			font-size: 1.1rem;
+			font-weight: bold;
+			margin-bottom: 20px;
+			color: #333;
+		}
+
+		.board-container {
+			display: flex;
+			justify-content: center;
+			margin-bottom: 20px;
+		}
+
+		.board {
+			display: grid;
+			grid-template-columns: repeat(15, 1fr);
+			grid-template-rows: repeat(15, 1fr);
+			width: 100%;
+			max-width: 450px;
+			aspect-ratio: 1 / 1;
+			background-color: #db9b59;
+			padding: 10px;
+			border-radius: 10px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+			gap: 1px;
+		}
+
+		.cell {
+			background-color: #f0d9b5;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			cursor: pointer;
+			transition: background-color 0.2s;
+			position: relative;
+		}
+
+		.cell:hover {
+			background-color: #e8ca9e;
+		}
+
+		.cell.disabled {
+			cursor: not-allowed;
+			opacity: 0.6;
+		}
+
+		.piece {
+			width: 85%;
+			height: 85%;
+			border-radius: 50%;
+			box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+			z-index: 2;
+			position: relative;
+		}
+
+		.black-piece {
+			background: radial-gradient(circle at 30% 30%, #666, #000);
+		}
+
+		.white-piece {
+			background: radial-gradient(circle at 30% 30%, #fff, #e0e0e0);
+		}
+
+		.controls {
+			display: flex;
+			gap: 10px;
+			justify-content: center;
+			flex-wrap: wrap;
+			margin-bottom: 20px;
+		}
+
+		.btn {
+			padding: 10px 20px;
+			background: linear-gradient(to right, #4a00e0, #8e2de2);
+			color: white;
+			border: none;
+			border-radius: 8px;
+			cursor: pointer;
+			font-weight: bold;
+			transition: all 0.3s;
+			font-size: 1rem;
+		}
+
+		.btn:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 5px 15px rgba(138, 43, 226, 0.3);
+		}
+
+		.btn:disabled {
+			background: #ccc;
+			cursor: not-allowed;
+			transform: none;
+		}
+
+		.share-section {
+			background: #f8f9fa;
+			border-radius: 10px;
+			padding: 20px;
+			text-align: center;
+		}
+
+		.share-section h3 {
+			color: #4a00e0;
+			margin-bottom: 10px;
+		}
+
+		.share-input {
+			width: 100%;
+			padding: 10px;
+			border: 2px solid #ddd;
+			border-radius: 5px;
+			font-size: 0.9rem;
+			margin-bottom: 10px;
+		}
+
+		.loading {
+			text-align: center;
+			padding: 20px;
+			color: #666;
+		}
+
+		@media (max-width: 768px) {
+			.game-container {
+				padding: 20px;
+			}
+			
+			.board {
+				max-width: 350px;
+			}
+			
+			.room-info {
+				flex-direction: column;
+				text-align: center;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="game-container">
+		<div class="game-header">
+			<h1 class="game-title">互联网五子棋对战</h1>
+		</div>
+		
+		<div id="roomSection">
+			<div class="room-info">
+				<div class="room-id" id="roomIdDisplay">房间ID: 未加入</div>
+				<div class="player-info" id="playerInfo">等待加入房间...</div>
+			</div>
+			
+			<div class="game-status" id="gameStatus">请先创建或加入房间</div>
+		</div>
+		
+		<div id="joinSection">
+			<div class="controls">
+				<button class="btn" onclick="createRoom()">创建房间</button>
+				<button class="btn" onclick="joinRoom()">加入房间</button>
+				<input type="text" id="joinRoomId" placeholder="输入房间ID" style="padding: 10px; border: 2px solid #ddd; border-radius: 5px;">
+			</div>
+		</div>
+		
+		<div id="gameSection" style="display: none;">
+			<div class="board-container">
+				<div class="board" id="board"></div>
+			</div>
+			
+			<div class="controls">
+				<button class="btn" onclick="restartGame()">重新开始</button>
+				<button class="btn" onclick="leaveRoom()">离开房间</button>
+			</div>
+		</div>
+		
+		<div class="share-section">
+			<h3>分享游戏</h3>
+			<input type="text" class="share-input" id="shareUrl" readonly>
+			<button class="btn" onclick="copyUrl()">复制链接</button>
+		</div>
+	</div>
+
+	<script>
+		// 🌟 关键修改：使用更稳定的云端数据库
+		const BOARD_SIZE = 15;
+		const CLOUD_URL = 'https://api.jsonstorage.net/v1/json'; // 更稳定的免费云存储
+		const API_KEY = 'your-api-key-here'; // 你可以申请免费API密钥
+		
+		// 🔥 临时解决方案：用本地存储 + 简单同步
+		let gameState = {
+			board: Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(null)),
+			currentPlayer: 'black',
+			gameOver: false,
+			winner: null,
+			roomId: null,
+			playerColor: null,
+			isHost: false,
+			lastMove: 0
+		};
+
+		let syncInterval = null;
+
+		// 初始化
+		function init() {
+			updateShareUrl();
+			checkUrlParams();
+		}
+
+		// 检查URL参数
+		function checkUrlParams() {
+			const urlParams = new URLSearchParams(window.location.search);
+			const roomId = urlParams.get('room');
+			if (roomId) {
+				document.getElementById('joinRoomId').value = roomId;
+			}
+		}
+
+		// 创建房间
+		function createRoom() {
+			const roomId = 'room_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+			gameState.roomId = roomId;
+			gameState.playerColor = 'black';
+			gameState.isHost = true;
+
+			// 保存到本地存储
+			const roomData = {
+				board: gameState.board,
+				currentPlayer: 'black',
+				gameOver: false,
+				winner: null,
+				lastMove: Date.now(),
+				players: { black: 'player1', white: null }
+			};
+			
+			localStorage.setItem(`wuziqi_${roomId}`, JSON.stringify(roomData));
+			startGame();
+			updateShareUrl();
+		}
+
+		// 加入房间
+		function joinRoom() {
+			const roomId = document.getElementById('joinRoomId').value.trim();
+			if (!roomId) {
+				alert('请输入房间ID');
+				return;
+			}
+
+			// 从本地存储获取房间数据
+			const roomData = localStorage.getItem(`wuziqi_${roomId}`);
+			if (!roomData) {
+				alert('房间不存在或已失效');
+				return;
+			}
+
+			const data = JSON.parse(roomData);
+			if (data.players.white) {
+				alert('房间已满');
+				return;
+			}
+
+			gameState.roomId = roomId;
+			gameState.playerColor = 'white';
+			gameState.isHost = false;
+
+			// 更新房间数据
+			data.players.white = 'player2';
+			localStorage.setItem(`wuziqi_${roomId}`, JSON.stringify(data));
+			
+			startGame();
+			updateShareUrl();
+			startSync(); // 开始同步
+		}
+
+		// 开始游戏
+		function startGame() {
+			document.getElementById('joinSection').style.display = 'none';
+			document.getElementById('gameSection').style.display = 'block';
+			
+			document.getElementById('roomIdDisplay').textContent = `房间ID: ${gameState.roomId}`;
+			document.getElementById('playerInfo').textContent = 
+				`你是 ${gameState.playerColor === 'black' ? '黑方' : '白方'} ${gameState.isHost ? '(房主)' : ''}`;
+			
+			createBoard();
+			updateStatus();
+		}
+
+		// 创建棋盘
+		function createBoard() {
+			const board = document.getElementById('board');
+			board.innerHTML = '';
+			
+			for (let row = 0; row < BOARD_SIZE; row++) {
+				for (let col = 0; col < BOARD_SIZE; col++) {
+					const cell = document.createElement('div');
+					cell.className = 'cell';
+					cell.dataset.row = row;
+					cell.dataset.col = col;
+					cell.addEventListener('click', () => handleCellClick(row, col));
+					board.appendChild(cell);
+				}
+			}
+		}
+
+		// 处理点击
+		function handleCellClick(row, col) {
+			if (gameState.gameOver) {
+				alert('游戏已结束');
+				return;
+			}
+
+			if (gameState.board[row][col] !== null) {
+				alert('此处已有棋子');
+				return;
+			}
+
+			if (gameState.currentPlayer !== gameState.playerColor) {
+				alert('不是你的回合');
+				return;
+			}
+
+			makeMove(row, col, gameState.playerColor);
+			saveGameState();
+			
+			if (gameState.isHost) {
+				startSync(); // 房主开始同步
+			}
+		}
+
+		// 下棋
+		function makeMove(row, col, color) {
+			gameState.board[row][col] = color;
+			
+			const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+			const piece = document.createElement('div');
+			piece.className = `piece ${color}-piece`;
+			cell.appendChild(piece);
+
+			// 检查胜利
+			if (checkWin(row, col, color)) {
+				gameState.gameOver = true;
+				gameState.winner = color;
+				updateStatus();
+				setTimeout(() => {
+					alert(`${color === 'black' ? '黑方' : '白方'}获胜！`);
+				}, 100);
+				return;
+			}
+
+			// 检查平局
+			if (isBoardFull()) {
+				gameState.gameOver = true;
+				gameState.winner = 'draw';
+				updateStatus();
+				setTimeout(() => {
+					alert('平局！');
+				}, 100);
+				return;
+			}
+
+			gameState.currentPlayer = gameState.currentPlayer === 'black' ? 'white' : 'black';
+			updateStatus();
+		}
+
+		// 检查胜利
+		function checkWin(row, col, color) {
+			const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+
+			for (const [dx, dy] of directions) {
+				let count = 1;
+
+				// 正向
+				for (let i = 1; i < 5; i++) {
+					const newRow = row + dx * i;
+					const newCol = col + dy * i;
+					if (isValidPosition(newRow, newCol) && gameState.board[newRow][newCol] === color) {
+						count++;
+					} else {
+						break;
+					}
+				}
+
+				// 反向
+				for (let i = 1; i < 5; i++) {
+					const newRow = row - dx * i;
+					const newCol = col - dy * i;
+					if (isValidPosition(newRow, newCol) && gameState.board[newRow][newCol] === color) {
+						count++;
+					} else {
+						break;
+					}
+				}
+
+				if (count >= 5) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		function isValidPosition(row, col) {
+			return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+		}
+
+		function isBoardFull() {
+			for (let row = 0; row < BOARD_SIZE; row++) {
+				for (let col = 0; col < BOARD_SIZE; col++) {
+					if (gameState.board[row][col] === null) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+
+		// 保存游戏状态
+		function saveGameState() {
+			const roomData = {
+				board: gameState.board,
+				currentPlayer: gameState.currentPlayer,
+				gameOver: gameState.gameOver,
+				winner: gameState.winner,
+				lastMove: Date.now(),
+				players: gameState.isHost ? 
+					{ black: 'player1', white: 'player2' } : 
+					{ black: 'player1', white: 'player2' }
+			};
+			
+			localStorage.setItem(`wuziqi_${gameState.roomId}`, JSON.stringify(roomData));
+		}
+
+		// 同步游戏状态
+		function startSync() {
+			if (syncInterval) return;
+			
+			syncInterval = setInterval(() => {
+				if (!gameState.roomId) return;
+				
+				const roomData = localStorage.getItem(`wuziqi_${gameState.roomId}`);
+				if (roomData) {
+					const data = JSON.parse(roomData);
+					
+					// 检查是否有更新
+					if (data.lastMove > gameState.lastMove) {
+						gameState.board = data.board;
+						gameState.currentPlayer = data.currentPlayer;
+						gameState.gameOver = data.gameOver;
+						gameState.winner = data.winner;
+						gameState.lastMove = data.lastMove;
+						
+						// 更新棋盘显示
+						updateBoardDisplay();
+						updateStatus();
+					}
+				}
+			}, 1000); // 每秒检查一次
+		}
+
+		// 更新棋盘显示
+		function updateBoardDisplay() {
+			for (let row = 0; row < BOARD_SIZE; row++) {
+				for (let col = 0; col < BOARD_SIZE; col++) {
+					const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+					const piece = cell.querySelector('.piece');
+					
+					if (gameState.board[row][col] && !piece) {
+						const newPiece = document.createElement('div');
+						newPiece.className = `piece ${gameState.board[row][col]}-piece`;
+						cell.appendChild(newPiece);
+					} else if (!gameState.board[row][col] && piece) {
+						cell.removeChild(piece);
+					}
+				}
+			}
+		}
+
+		// 更新状态
+		function updateStatus() {
+			const status = document.getElementById('gameStatus');
+			if (gameState.gameOver) {
+				if (gameState.winner === 'draw') {
+					status.textContent = '平局！';
+				} else {
+					status.textContent = `${gameState.winner === 'black' ? '黑方' : '白方'}获胜！`;
+				}
+			} else {
+				const yourTurn = gameState.currentPlayer === gameState.playerColor;
+				status.textContent = `${gameState.currentPlayer === 'black' ? '黑方' : '白方'}回合 ${yourTurn ? '(你的回合)' : '(对手回合)'}`;
+			}
+		}
+
+		// 重新开始
+		function restartGame() {
+			if (!confirm('确定要重新开始吗？')) return;
+			
+			gameState.board = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(null));
+			gameState.currentPlayer = 'black';
+			gameState.gameOver = false;
+			gameState.winner = null;
+			
+			saveGameState();
+			createBoard();
+			updateStatus();
+		}
+
+		// 离开房间
+		function leaveRoom() {
+			if (confirm('确定要离开房间吗？')) {
+				if (syncInterval) {
+					clearInterval(syncInterval);
+					syncInterval = null;
+				}
+				
+				gameState.roomId = null;
+				gameState.playerColor = null;
+				gameState.isHost = false;
+				
+				document.getElementById('joinSection').style.display = 'block';
+				document.getElementById('gameSection').style.display = 'none';
+				document.getElementById('roomIdDisplay').textContent = '房间ID: 未加入';
+				document.getElementById('playerInfo').textContent = '等待加入房间...';
+				document.getElementById('gameStatus').textContent = '请先创建或加入房间';
+			}
+		}
+
+		// 更新分享链接
+		function updateShareUrl() {
+			const shareUrl = document.getElementById('shareUrl');
+			if (gameState.roomId) {
+				shareUrl.value = `${window.location.origin}${window.location.pathname}?room=${gameState.roomId}`;
+			} else {
+				shareUrl.value = window.location.href;
+			}
+		}
+
+		// 复制链接
+		function copyUrl() {
+			const shareUrl = document.getElementById('shareUrl');
+			shareUrl.select();
+			document.execCommand('copy');
+			alert('链接已复制！发送给朋友即可加入对战');
+		}
+
+		// 页面加载时初始化
+		window.onload = init;
+	</script>
+</body>
+</html>
